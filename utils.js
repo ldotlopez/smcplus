@@ -92,4 +92,65 @@
 
         return true;
     }
+
+    Validators.Form = function (form) {
+        this._form = form;
+
+        this._messagesArea = $('.messages', this._form);
+        if (!this._messagesArea.length) {
+            this._messagesArea = undefined;
+            console.log('Unable to get messages area');
+        }
+
+        this._hasErrors = false;
+    }
+
+    Validators.Form.prototype.getObjects = function () {
+        return this._form.serializeArray().reduce(function(obj, item) {
+            obj[item.name] = item;
+            return obj;
+        }, {});
+    }
+
+    Validators.Form.prototype.getData = function () {
+        return this._form.serializeArray().reduce(function(obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+    };
+
+    Validators.Form.prototype.displayError = function (elementName, message) {
+        this._hasErrors = true;
+
+        var element = $('[name='+elementName+']', this._form);
+        if (!element.length) {
+            console.log('Unable to find form element: ' + elementName);
+        }
+
+        var formGroup = element.closest('.form-group');
+        if (!formGroup.length) {
+            console.log('Unable to find form group for: ' + elementName);
+        }
+
+        formGroup.addClass('has-error');
+        
+        if (!this._messagesArea) {
+            return;
+        }
+
+        this._messagesArea.append($('<p>' + message + '</p>'));
+        this._messagesArea.show();
+    }
+
+    Validators.Form.prototype.clearErrors = function () {
+        $('.has-error', this._form).removeClass('has-error');
+        this._messagesArea.hide();
+        this._messagesArea.empty();
+        this._hasErrors = false;
+    }
+
+    Validators.Form.prototype.hasErrors = function () {
+        return this._hasErrors;
+    }
+
 }( window.Validators = window.Validators || {}, jQuery ));

@@ -1,5 +1,22 @@
 "use strict";
 
+var Defaults = {
+	latitude: 39.9859896,
+	longitude: -0.043105240,
+	zoom: 15,
+	apiKey: 'AIzaSyAbozrLWf95y2G6oz24ne3ONfaaOXhEVp0',
+	language: 'es',
+	AytoArea: 'Otras Areas de desperfecto.', // Areas -> Áreas
+	AytoCause: 'Desconocido',
+	AytoAPI: 'http://castello.es/web30/pages/generico_web10.php?cod1=383&cod2=615'
+};
+Defaults.invGeoLocationApi = (
+	'https://maps.googleapis.com/maps/api/geocode/json?' +
+	'key=' + Defaults.apiKey + '&' +
+	'language='+ Defaults.language + '&'
+);
+
+
 var App = function () {
 	this._init();
 };
@@ -32,12 +49,13 @@ App.prototype._init = function (opts) {
 		this.runTicket();
 	}
 
-	// Map stuff
-	self.marker = undefined;
-	self.map = undefined;
-	self.marker_address = {};
-
 	// Show / hide elements
+	$('.nav #home-link').off('click');
+	$('.nav #home-link').on('click', function () {
+		self._init();
+		return false;
+	});
+
 	$('.nav #about-link').off('click');
 	$('.nav #about-link').on('click', function () {
 		self.switchToPanel('about');
@@ -88,8 +106,12 @@ App.prototype.deleteCurrentProfile = function () {
 	self._init({profile: undefined});
 }
 
+/*
+ * Switch to some smc-panel showing/hiding others
+ * Needs to know about all panels
+ */
 App.prototype.switchToPanel = function (panel) {
-	var panels = ['about', 'profile-setup', 'ticket', 'waiting', 'upstream-response'];
+	var panels = ['about', 'profile-setup', 'ticket', 'ayto-loading', 'ayto-response'];
 	$.each(panels, function(idx, e) {
 		var id = '.smc-panel#' + e;
 
@@ -119,10 +141,23 @@ App.prototype.resetApp = function () {
  	this._init();
 };
 
+
+/*
+ *
+ * Map functionality
+ *
+ * - If user clicks anywhere in the map the marker is moved and the view is panned
+ * - If geolocation is requested the behaviour is similar to the previous stament
+ *
+ */
+
+/*
+ * This function initilizes the map and adds listeners to some events
+ */
 App.prototype.initMap = function () {
 	var self = this;
 
-	function onClick (e) {
+	function onMapClick (e) {
 		self.setMarker({
 			latitude: e.latLng.lat(),
 			longitude: e.latLng.lng()
@@ -130,20 +165,28 @@ App.prototype.initMap = function () {
 		e.stop();
 	}
 
-	this.map = new google.maps.Map(document.getElementById('map'), {
-		center: {lat: 39.9859896, lng: -0.043105240},
-    	zoom: 15
-	});
+	if (typeof self.map == 'object') {
+		return;
+	}
 
-	this.map.addListener('click', onClick);
+	self.map = new google.maps.Map(document.getElementById('map'), {
+		center: {
+			lat: Defaults.latitude,
+			lng: Defaults.longitude
+		},
+    	zoom: Defaults.zoom
+	});
+	self.marker = new google.maps.Marker({map: self.map})
+	self.marker_address = {};
+
+	self.map.addListener('click', onMapClick);
 }
 
+/*
+ * Moves marker and address info. coors == undefined causes geolocation
+ */
 App.prototype.setMarker = function (coords) {
 	var self = this;
-
-	function tryGeoposition() {
-		navigator.geolocation.getCurrentPosition(onGeoposition);
-	}
 
 	function onGeoposition (geo) {
 		self.setMarker({
@@ -152,34 +195,7 @@ App.prototype.setMarker = function (coords) {
 		});
 	}
 
-	if (coords === undefined) {
-		tryGeoposition();
-		return;
-	}
-
-	if (self.marker !== undefined) {
-		self.marker.setMap(undefined);
-	}
-
-	self.marker = new google.maps.Marker({
-		map: self.map,
-		position: {
-			lat: coords.latitude,
-			lng: coords.longitude
-		}
-	});
-	self.map.panTo({
-		lat: coords.latitude,
-		lng: coords.longitude
-	});
-
-	self.updateAddress();
-}
-
-App.prototype.updateAddress = function() {
-	var self = this;
-
-	function onResponse (resp) {
+	function onInvGeoLocation (resp) {
 		self.marker_address = {
 			number: resp.results[0].address_components[0].short_name,
 			street: resp.results[0].address_components[1].short_name
@@ -187,18 +203,34 @@ App.prototype.updateAddress = function() {
 
 		var label = self.marker_address.street + ', ' + self.marker_address.number
 		$('#ticket #map-address').val(label);
-
-		console.log('Marker located at: ', label);
 	};
 
-	var q = 'https://maps.googleapis.com/maps/api/geocode/json?' +
-	      'key=AIzaSyAbozrLWf95y2G6oz24ne3ONfaaOXhEVp0&' +
-	      'language=es&' +
-	      'latlng=' + self.marker.position.lat() + ',' + self.marker.position.lng();
+	if (coords === undefined) {
+		navigator.geolocation.getCurrentPosition(onGeoposition);
+		return;
+	}
 
-	$.get(q, onResponse);
+	self.marker.setPosition({
+		lat: coords.latitude,
+		lng: coords.longitude
+	});
+
+	self.map.panTo({
+		lat: coords.latitude,
+		lng: coords.longitude
+	});
+
+	var apiCall = (
+		Defaults.invGeoLocationApi + 
+		'latlng=' + self.marker.position.lat() + ',' + self.marker.position.lng()
+	);
+	$.get(apiCall, onInvGeoLocation);
 }
 
+/*
+ * Phase 1: Profile setup.
+ * This is simple form with some validations.
+ */
 App.prototype.runProfileSetup = function () {
 	var self = this;
 	this.switchToPanel('profile-setup');
@@ -237,13 +269,6 @@ App.prototype.runProfileSetup = function () {
 	$('#profile-setup').show();
 	$('#ticket').hide();
 };
-
-App.prototype.runTicket = function () {
-	var self = this;
-	this.switchToPanel('ticket');
-
-	var label = "Current profile: " + this.currProfileName;
-}
 
 App.prototype.onProfileSubmitted = function () {
 	var self = this;
@@ -300,8 +325,46 @@ App.prototype.onProfileSubmitted = function () {
 	self._init();
 };
 
+/*
+ * Phase 2: Ticket creation
+ * Form + Google Maps
+ */
+App.prototype.runTicket = function () {
+	var self = this;
+
+	self.switchToPanel('ticket');
+	self.initMap();
+
+	var form = new Validators.Form($('#ticket form'));
+	form.clearErrors();
+
+	$('#ticket #debug').hide();
+}
+
 App.prototype.onTicketSubmitted = function () {
 	var self = this;
+
+	function validateForm () {
+		var form = new Validators.Form($('#ticket form'));
+		var data = form.getData();
+
+		form.clearErrors();
+
+		if (!Validators.isNonEmptyString(data['problem'])) {
+			form.displayError('problem', 'Debe especificar un problema');
+		}
+
+		if (!Validators.isNonEmptyString(self.marker_address.street) ||
+			!Validators.isNonEmptyString(self.marker_address.number)) {
+			form.displayError('address', 'Direcci&oacute;n vac&iacute;a o invalida');
+		}
+
+		return !form.hasErrors();
+	}
+
+	if (!validateForm()) {
+		return;
+	}
 
 	var d = new Date();
 	var ticketData = {
@@ -319,14 +382,14 @@ App.prototype.onTicketSubmitted = function () {
 
 		/* 'Useless' ticket data */
 		dia2: d.getDate(),
-		mes2: d.getMonth(),
+		mes2: d.getMonth() + 1,
 		anyo2: d.getFullYear(),
 		
 		/* Área del problema */
-		area: 'Otras Áreas de Desperfecto.',
+		area: Defaults.AytoArea,
 
 		/* Causa del problema */
-		origen: 'Desconocido'
+		origen: Defaults.AytoCause
 	};
 
 	var formData = this._getFormData($('#ticket form'));
@@ -334,7 +397,7 @@ App.prototype.onTicketSubmitted = function () {
 	ticketData['numero'] = self.marker_address.number;
 	ticketData['calle'] = self.marker_address.street;
 
-	$('#ticket #url').text(url);
+	$('#ticket #url').text(Defaults.AytoAPI);
 	$('#ticket #data').text(JSON.stringify(ticketData, null, '\t'));
 	$('#ticket .messages#debug').show();
 
@@ -361,10 +424,20 @@ App.prototype.onTicketSubmitted = function () {
 	self.waitForAytoResponse();
 }
 
+/*
+ * Phase 3: Wait for response
+ * This can be a simple spinner
+ */
 App.prototype.waitForAytoResponse = function() {
+	var self = this;
 
+	self.switchToPanel('')
 }
 
+/*
+ * Phase 4: Show server (Ayto) response
+ * Just display some raw data
+ */
 App.prototype.onTicketSubmitResponse = function (response, status) {
 	var self = this;
 
@@ -394,10 +467,3 @@ App.prototype._getFormData = function (f) {
 	}, {});
 };
 
-$(document).ready(function() {
-	document.app = new App();
-});
-
-function initMap() {
-	document.app.initMap();
-}
