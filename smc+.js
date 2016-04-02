@@ -108,20 +108,10 @@ App.prototype.deleteCurrentProfile = function () {
 
 /*
  * Switch to some smc-panel showing/hiding others
- * Needs to know about all panels
  */
 App.prototype.switchToPanel = function (panel) {
-	var panels = ['about', 'profile-setup', 'ticket', 'ayto-loading', 'ayto-response'];
-	$.each(panels, function(idx, e) {
-		var id = '.smc-panel#' + e;
-
-		if (e == panel) {
-			$(id).show();
-		}
-		else {
-			$(id).hide();
-		}
-	});
+	$('.smc-panel').hide();
+	$('.smc-panel#' + panel).show();
 }
 
 App.prototype.resetApp = function () {
@@ -319,7 +309,7 @@ App.prototype.onProfileSubmitted = function () {
 	var profileName = userData['name'] + " " + userData['surname'];
 
 	profiles[profileName] = userData;
-	Cookies.set('profiles', profiles);
+	Cookies.set('profiles', profiles, {expires: 3650});
 
 	console.log("Saved profile '"+ profileName +"'");
 	self._init();
@@ -401,54 +391,70 @@ App.prototype.onTicketSubmitted = function () {
 	$('#ticket #data').text(JSON.stringify(ticketData, null, '\t'));
 	$('#ticket .messages#debug').show();
 
-	/*
-	var url = 'http://castello.es/web30/pages/generico_web10.php?cod1=383&cod2=615';
-	var payload = $.param(ticketData);
-	console.log(ticketData);	
-	console.log(url+'?'+payload);
-	*/
-	return;
 
-	promise = $.ajax({
-		type: "POST",
-		url: url,
-		data: ticketData,
-     	success: function (response) {
-     		self.onTicketSubmitResponse(response, 'success');
-     	},
-     	error: function (response) {
-     		self.onTicketSubmitResponse(response, 'error');
-     	},
-    });
-
-	self.waitForAytoResponse();
+	self.runAytoRequest(ticketData, {simulated: true});
 }
 
 /*
  * Phase 3: Wait for response
  * This can be a simple spinner
  */
-App.prototype.waitForAytoResponse = function() {
+App.prototype.runAytoRequest = function(ticketData, opts) {
 	var self = this;
+	var simulated = opts.simulated || true;
 
-	self.switchToPanel('')
+	function simulatedApiCall() {
+		setTimeout(function () {
+			self.runAytoResponse({}, 'success');
+		}, 3000);
+	}
+
+	function realApiCall() {
+		$.ajax({
+			type: "POST",
+			url: url,
+			data: ticketData,
+	     	success: function (response) {
+				self.runAytoResponse({}, 'success');
+	     	},
+	     	error: function (response) {
+				self.runAytoResponse({}, 'error');
+	     	},
+    	});
+	}
+
+	self.switchToPanel('ayto-request');
+
+	var url = Defaults.AytoAPI;
+	var payload = $.param(ticketData);
+	console.log(ticketData);	
+	console.log(url+'?'+payload);
+
+	$('#ayto-request #url').text(url);
+	$('#ayto-request #data').text(JSON.stringify(ticketData, null, '\t'));
+	$('#ayto-request #curl-command-line').text(
+		'curl '+
+		'--data "' + $.param(ticketData) + '" ' +
+		'--referer "' + url + '" ' +
+		'"' + url + '"'
+	);
+
+	var apiCall = simulated ? simulatedApiCall : realApiCall;
+	apiCall(ticketData);
 }
 
 /*
  * Phase 4: Show server (Ayto) response
  * Just display some raw data
  */
-App.prototype.onTicketSubmitResponse = function (response, status) {
+App.prototype.runAytoResponse = function(response, status) {
 	var self = this;
 
-	$('#profile-setup').hide();
-	$('#ticket').hide();
-
-	var html = '<strong>' + status + '<status>';
-	$('#upstream-reply #status').html(label)
-
-	$('#upstream-reply').show();
+	self.switchToPanel('ayto-response');
+	$('#ayto-response #status').text(status);
+	$('#ayto-response #data').text(JSON.stringify(response));
 }
+
 
 /*
  * Support methods
@@ -466,4 +472,3 @@ App.prototype._getFormData = function (f) {
     	return obj;
 	}, {});
 };
-

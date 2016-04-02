@@ -185,7 +185,15 @@
 				<input class="btn btn-primary" type="submit" value="Enviar aviso">
 			</form>
 
-			<div class="messages well" id="debug">
+		</div> <!-- #ticket -->
+
+		<div class="smc-panel" id="ayto-request">
+			<div class="alert alert-info">
+				Enviando datos al Ayuntamiento...
+			</div>
+
+			<div class="well">
+				<p>Datos técnicos</p>
 				<div>
 					<strong>POST URL: </strong>
 					<i id="url"></i>
@@ -194,15 +202,22 @@
 					<strong>POST data:</strong>
 					<pre id="data"></pre>
 				</div>
+				<div>
+					<strong>Curl command line</strong>
+					<pre id="curl-command-line"></pre>
+				</div>
 			</div>
-		</div> <!-- #ticket -->
-
-		<div class="smc-panel" id="ayto-loading">
-
 		</div>
 
 		<div class="smc-panel" id="ayto-response">
+			<div class="alert alert-info">
+				Respuesta recibida.
+			</div>
 
+			<div class="well">
+				<div><strong>Status: </strong><span id="status"></span></div>
+				<div><strong>Data: </strong><pre id="data"></pre></div>
+			</div>
 		</div>
 
 
