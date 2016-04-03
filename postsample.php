@@ -1,14 +1,15 @@
+<?php header('Content-Type:text/html; charset=windows-1252'); ?>
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="windows-1252">
-		<title>SMC+ POST sample</title>
+		<title>SMC+ simulated page</title>
 	</head>
 
 	<body>
 
-		<div id="referer">Referer: <?php print($_SERVER["HTTP_REFERER"] ); ?></div>
-		<div id="ua"><?php print($_SERVER['HTTP_USER_AGENT']); ?></div>
+		<p>Simulaci&oacute;n</p>
 		<pre id="data">Data:<?php print_r($_POST); ?></pre>
 
 	</body>

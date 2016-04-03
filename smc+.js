@@ -6,7 +6,7 @@ var Defaults = {
 	zoom: 15,
 	apiKey: 'AIzaSyAbozrLWf95y2G6oz24ne3ONfaaOXhEVp0',
 	language: 'es',
-	AytoArea: 'Otras Areas de desperfecto.', // Areas -> Áreas
+	AytoArea: 'Otras Áreas de desperfecto.',
 	AytoCause: 'Desconocido',
 	AytoAPI: 'http://castello.es/web30/pages/generico_web10.php?cod1=383&cod2=615'
 };
@@ -43,7 +43,7 @@ App.prototype._init = function (opts) {
 		
 		$('.nav .dropdown a').contents()[0].textContent = this.currProfileName;
 		// $('.nav .dropdown-menu').append($('<li><a id="profile-op-add" href="#">Crear otro perfil</a></li>'));		
-		$('.nav .dropdown-menu').append($('<li><a id="profile-op-delete" href="#">Cerrar sesi&oacute;n</a></li>'));
+		$('.nav .dropdown-menu').append($('<li><a id="profile-op-delete" href="#">Cerrar sesión</a></li>'));
 		$('.nav .dropdown').show();
 		
 		this.runTicket();
@@ -167,8 +167,6 @@ App.prototype.initMap = function () {
     	zoom: Defaults.zoom
 	});
 	self.marker = new google.maps.Marker({map: self.map})
-	self.marker_invGeoLocation = {}
-
 	self.map.addListener('click', onMapClick);
 }
 
@@ -186,13 +184,47 @@ App.prototype.setMarker = function (coords) {
 	}
 
 	function onInvGeoLocation (resp) {
-		self.marker_invGeoLocation = resp.results[0];
+		/*
+		function findResult(results, typeNames) {
+			ret = typeNames.reduce(function(obj, item) {
+    			obj[item] = undefined;
+		    	return obj;
+			}, {});
+
+			for (var r = 0; r < results.length; r++) {
+
+			}
+
+			return ret;
+		}
+		*/
+
+		function findComponentType(components, typeName) {
+			var ret = {};
+
+			for (var c = 0; c < components.length; c++) {
+				for (var t = 0; t < components[c].types.length; t++) {
+					if (components[c].types[t] == typeName) {
+						return components[c].short_name;
+					}
+				}
+			}
+
+			return undefined;
+		}
+
+		var number = findComponentType(resp.results[0].address_components, 'street_number');
+		var street = findComponentType(resp.results[0].address_components, 'route');
+		var locality = findComponentType(resp.results[0].address_components, 'locality');
+
 		var label = (
-			self.marker_invGeoLocation.address_components[0].short_name +
-			", " +
-			self.marker_invGeoLocation.address_components[1].short_name
+			street + ", " + number + " (" + locality + ")"
 		);
+
 		$('#ticket #map-address').val(label);
+		$('#ticket input[name=number]').val(number);
+		$('#ticket input[name=street]').val(street);
+		$('#ticket input[name=locality]').val(locality);
 	};
 
 	if (coords === undefined) {
@@ -344,10 +376,11 @@ App.prototype.onTicketSubmitted = function () {
 			form.displayError('problem', 'Debe especificar un problema');
 		}
 
-		if (!Validators.isNonEmptyString(self.marker_invGeoLocation.address_components[0].short_name) ||
-			!Validators.isNonEmptyString(self.marker_invGeoLocation.address_components[1].short_name) ||
-			self.marker_invGeoLocation.address_components[ ]
-			form.displayError('address', 'Direcci&oacute;n vac&iacute;a o invalida');
+		if (!Validators.isNonEmptyString(data['number']) ||
+			!Validators.isNonEmptyString(data['street']) ||
+			data['locality'].indexOf('Castell') != 0 && 
+			data['locality'] != "Castelló de la Plana") {
+			form.displayError('address', 'Dirección vacía o invalida');
 		}
 
 		return !form.hasErrors();
@@ -385,15 +418,15 @@ App.prototype.onTicketSubmitted = function () {
 
 	var formData = this._getFormData($('#ticket form'));
 	ticketData['problema'] = formData['problem'];
-	ticketData['numero'] = self.marker_invGeoLocation.address_components[0].short_name;
-	ticketData['calle'] = self.marker_invGeoLocation.address_components[1].short_name;
+	ticketData['numero'] = formData['number'];
+	ticketData['calle'] = formData['street'];
 
 	$('#ticket #url').text(Defaults.AytoAPI);
 	$('#ticket #data').text(JSON.stringify(ticketData, null, '\t'));
 	$('#ticket .messages#debug').show();
 
 
-	self.runAytoRequest(ticketData, {simulated: true});
+	self.runAytoRequest(ticketData, {simulated: formData['simulated']});
 }
 
 /*
@@ -402,7 +435,10 @@ App.prototype.onTicketSubmitted = function () {
  */
 App.prototype.runAytoRequest = function(ticketData, opts) {
 	var self = this;
-	var simulated = opts.simulated || true;
+	var simulated = opts.simulated;
+	if (simulated == undefined) {
+		simulated = true;
+	}
 
 	function simulatedApiCall() {
 		setTimeout(function () {
@@ -411,17 +447,6 @@ App.prototype.runAytoRequest = function(ticketData, opts) {
 	}
 
 	function realApiCall() {
-		$.ajax({
-			type: "POST",
-			url: url,
-			data: ticketData,
-	     	success: function (response) {
-				self.runAytoResponse({}, 'success');
-	     	},
-	     	error: function (response) {
-				self.runAytoResponse({}, 'error');
-	     	},
-    	});
 	}
 
 	self.switchToPanel('ayto-request');
@@ -440,20 +465,41 @@ App.prototype.runAytoRequest = function(ticketData, opts) {
 		'"' + url + '"'
 	);
 
-	var apiCall = simulated ? simulatedApiCall : realApiCall;
-	apiCall(ticketData);
+	var destUrl = simulated ? 'http://localhost/~luis/SMC+/postsample.php' : Defaults.AytoAPI;
+	$.ajax({
+		type: "POST",
+		url: 'http://localhost/~luis/SMC+/postgateway.php',
+		data: {
+			iconv: ['utf-8', 'windows-1252'],
+			data: ticketData,
+			referer: Defaults.AytoAPI,
+			url: destUrl,
+			base: 'http://www.castello.es/'
+		},
+     	success: function (response) {
+			self.runAytoResponse(response, 'success');
+     	},
+     	error: function (response) {
+			self.runAytoResponse(response, 'error');
+     	},
+	});
 }
 
 /*
  * Phase 4: Show server (Ayto) response
- * Just display some raw data
  */
 App.prototype.runAytoResponse = function(response, status) {
 	var self = this;
 
 	self.switchToPanel('ayto-response');
-	$('#ayto-response #status').text(status);
-	$('#ayto-response #data').text(JSON.stringify(response));
+
+	if (status != 'success') {
+		$('#ayto-response #status').text(status);
+		$('#ayto-response #data').text(JSON.stringify(response));
+		return;
+	}
+
+	$('html').html(response);
 }
 
 

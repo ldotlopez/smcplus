@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
-    <meta charset="windows-1252">
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
@@ -60,7 +60,7 @@
 		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 
 		      <ul class="nav navbar-nav navbar-right">
-		      	<li><a href="#" id="about-link">«Acerca de SMC+»</a></li>
+		      	<li><a href="#" id="about-link">Â«Acerca de SMC+Â»</a></li>
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <span class="caret"></span></a>
 		          <ul class="dropdown-menu">
@@ -79,13 +79,13 @@
 		</nav>
 
 		<div class="smc-panel" id="about">
-			<p>SMC+ es una herramienta diseñada para simplificar el funcionamiento del <acronym title="Servei de Manteniment de la Ciutat">SMC [1]</acronym></p>
+			<p>SMC+ es una herramienta diseÃ±ada para simplificar el funcionamiento del <acronym title="Servei de Manteniment de la Ciutat">SMC [1]</acronym></p>
 
-			<p>En SMC+ también se experimenta con ideas como perfiles (personal/asociación), geolocalización y próximamente imágenes</p>
+			<p>En SMC+ tambiÃ©n se experimenta con ideas como perfiles (personal/asociaciÃ³n), geolocalizaciÃ³n y prÃ³ximamente imÃ¡genes</p>
 
 			<p>Contacto: luis@cuarentaydos.com</p>
 
-			<i>1. «Servei de Manteniment de la Ciutat»</i>
+			<i>1. Â«Servei de Manteniment de la CiutatÂ»</i>
 		</div>
 
 		<div class="smc-panel" id="profile-setup">
@@ -106,7 +106,7 @@
 
 				<div class="form-group" id="profile-apellidos">
 					<label for="apellidos">Apellidos</label>
-					<input class="form-control" placeholder="López Perez" name="surname" type="text">
+					<input class="form-control" placeholder="LÃ³pez Perez" name="surname" type="text">
 				</div>
 
 				<div class="form-group" id="profile-dni">
@@ -115,22 +115,22 @@
 				</div>
 
 				<div class="form-group" id="profile-address">
-					<label for="direccion">Dirección</label>
+					<label for="direccion">DirecciÃ³n</label>
 					<input class="form-control" placeholder="Calle Lepanto, 21" name="address" type="text">
 				</div>
 
 				<div class="form-group" id="profile-cp">
-					<label for="cp">Código postal</label>
+					<label for="cp">CÃ³digo postal</label>
 					<input class="form-control" placeholder="12001" name="cp" type="text">
 				</div>
 
 				<div class="form-group" id="profile-phone">
-					<label for="telefono">Teléfono</label>
+					<label for="telefono">TelÃ©fono</label>
 					<input class="form-control" placeholder="666123456" name="phone" type="text">
 				</div>
 
 				<div class="form-group" id="profile-email">
-					<label for="email">Correo electrónico</label>
+					<label for="email">Correo electrÃ³nico</label>
 					<input class="form-control" placeholder="pedro@gmail.com" name="email" type="text">
 				</div>
 
@@ -140,7 +140,7 @@
 
 				  		<div class="row">
 							<div class="form-group col-md-4" id="profile-day">
-								<label for="day">Día</label>
+								<label for="day">DÃ­a</label>
 								<select class="form-control" name="day"></select>
 							</div>
 
@@ -150,7 +150,7 @@
 							</div>
 
 							<div class="form-group col-md-4" id="profile-year">
-								<label for="year">Año</label>
+								<label for="year">AÃ±o</label>
 								<select class="form-control" name="year"></select>
 							</div>
 
@@ -171,16 +171,20 @@
 				</div>
 
 				<div class="form-group">
-					<label class="control-label">Ubicación (<a id="locator" href="#">obtener automáticamente</a>)</label>
-					<input id="map-address" class="form-control" disabled type="text" name="address" placeholder="Sin ubicación">
+					<label class="control-label">UbicaciÃ³n (<a id="locator" href="#">obtener automÃ¡ticamente</a>)</label>
+					<input id="map-address" class="form-control" disabled type="text" name="address" placeholder="Sin ubicaciÃ³n">
 					<div id="map"></div>
 				</div>
 
 				<div class="checkbox">
 					<label>
-						<input checked disabled type="checkbox"> Solo simular
+						<input checked type="checkbox"> Solo simular
 					</label>
 				</div>
+
+				<input type="hidden" name="street">
+				<input type="hidden" name="number">
+				<input type="hidden" name="locality">
 
 				<input class="btn btn-primary" type="submit" value="Enviar aviso">
 			</form>
@@ -193,7 +197,7 @@
 			</div>
 
 			<div class="well">
-				<p>Datos técnicos</p>
+				<p>Datos tÃ©cnicos</p>
 				<div>
 					<strong>POST URL: </strong>
 					<i id="url"></i>

@@ -9,7 +9,6 @@ function docurl($request) {
 	curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($request['data']));
 
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-	// curl_setopt($curl, CURLOPT_VERBOSE, 1);
 	curl_setopt($curl, CURLOPT_HEADER, 1);
 
 	$response = curl_exec($curl);
@@ -37,6 +36,7 @@ function docurl($request) {
 
 
 $request = $_POST;
+/* Test data
 $request = array(
 	'url' => 'http://localhost/~luis/SMC+/postsample.php',
 	'url' => 'http://castello.es/web30/pages/seccion_web10.php?cod1=383',
@@ -49,6 +49,7 @@ $request = array(
 	'iconv' => array('utf-8', 'windows-1252'),
 	'base' => 'http://castello.es/'
 );
+*/
 
 // charset conversion for data
 if (array_key_exists('iconv', $request)) {
