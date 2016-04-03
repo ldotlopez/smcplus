@@ -167,7 +167,7 @@ App.prototype.initMap = function () {
     	zoom: Defaults.zoom
 	});
 	self.marker = new google.maps.Marker({map: self.map})
-	self.marker_address = {};
+	self.marker_invGeoLocation = {}
 
 	self.map.addListener('click', onMapClick);
 }
@@ -186,12 +186,12 @@ App.prototype.setMarker = function (coords) {
 	}
 
 	function onInvGeoLocation (resp) {
-		self.marker_address = {
-			number: resp.results[0].address_components[0].short_name,
-			street: resp.results[0].address_components[1].short_name
-		};
-
-		var label = self.marker_address.street + ', ' + self.marker_address.number
+		self.marker_invGeoLocation = resp.results[0];
+		var label = (
+			self.marker_invGeoLocation.address_components[0].short_name +
+			", " +
+			self.marker_invGeoLocation.address_components[1].short_name
+		);
 		$('#ticket #map-address').val(label);
 	};
 
@@ -344,8 +344,9 @@ App.prototype.onTicketSubmitted = function () {
 			form.displayError('problem', 'Debe especificar un problema');
 		}
 
-		if (!Validators.isNonEmptyString(self.marker_address.street) ||
-			!Validators.isNonEmptyString(self.marker_address.number)) {
+		if (!Validators.isNonEmptyString(self.marker_invGeoLocation.address_components[0].short_name) ||
+			!Validators.isNonEmptyString(self.marker_invGeoLocation.address_components[1].short_name) ||
+			self.marker_invGeoLocation.address_components[ ]
 			form.displayError('address', 'Direcci&oacute;n vac&iacute;a o invalida');
 		}
 
@@ -384,8 +385,8 @@ App.prototype.onTicketSubmitted = function () {
 
 	var formData = this._getFormData($('#ticket form'));
 	ticketData['problema'] = formData['problem'];
-	ticketData['numero'] = self.marker_address.number;
-	ticketData['calle'] = self.marker_address.street;
+	ticketData['numero'] = self.marker_invGeoLocation.address_components[0].short_name;
+	ticketData['calle'] = self.marker_invGeoLocation.address_components[1].short_name;
 
 	$('#ticket #url').text(Defaults.AytoAPI);
 	$('#ticket #data').text(JSON.stringify(ticketData, null, '\t'));
