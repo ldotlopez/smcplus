@@ -112,6 +112,7 @@ App.prototype.deleteCurrentProfile = function () {
 App.prototype.switchToPanel = function (panel) {
 	$('.smc-panel').hide();
 	$('.smc-panel#' + panel).show();
+	window.scrollTo(0, 0);
 }
 
 App.prototype.resetApp = function () {
