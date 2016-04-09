@@ -4,6 +4,7 @@ var Defaults = {
 	latitude: 39.9859896,
 	longitude: -0.043105240,
 	zoom: 15,
+    mapStyle: [ { "elementType": "labels", "stylers": [ { "visibility": "off" } ] } ],
 	apiKey: 'AIzaSyAbozrLWf95y2G6oz24ne3ONfaaOXhEVp0',
 	language: 'es',
 	AytoArea: 'Otras Áreas de desperfecto.',
@@ -165,8 +166,12 @@ App.prototype.initMap = function () {
 			lat: Defaults.latitude,
 			lng: Defaults.longitude
 		},
-    	zoom: Defaults.zoom
+    	zoom: Defaults.zoom,
+        // mapTypeId: 'smcstyle',
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        streetViewControl: false,
 	});
+    // self.map.mapTypes.set('smcstyle', new google.maps.StyledMapType(Defaults.mapStyle, { name: 'SMC Style' }));
 	self.marker = new google.maps.Marker({map: self.map})
 	self.map.addListener('click', onMapClick);
 }
@@ -426,8 +431,7 @@ App.prototype.onTicketSubmitted = function () {
 	$('#ticket #data').text(JSON.stringify(ticketData, null, '\t'));
 	$('#ticket .messages#debug').show();
 
-
-	self.runAytoRequest(ticketData, {simulated: formData['simulated']});
+	self.runAytoRequest(ticketData, {simulated: formData['simulated'] == 'on'});
 }
 
 /*
@@ -466,10 +470,12 @@ App.prototype.runAytoRequest = function(ticketData, opts) {
 		'"' + url + '"'
 	);
 
-	var destUrl = simulated ? 'http://localhost/~luis/SMC+/postsample.php' : Defaults.AytoAPI;
+	var baseURL = location.protocol + '//' + location.hostname + ":" + (location.port || "80") + location.pathname;
+	var destUrl = simulated ? baseURL + "/postsample.php" : Defaults.AytoAPI;
+
 	$.ajax({
 		type: "POST",
-		url: 'http://localhost/~luis/SMC+/postgateway.php',
+		url: baseURL + "/postgateway.php",
 		data: {
 			iconv: ['utf-8', 'windows-1252'],
 			data: ticketData,
