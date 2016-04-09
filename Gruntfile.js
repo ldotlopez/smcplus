@@ -1,15 +1,15 @@
 var jsfiles = [
-	'node_modules/jquery/dist/jquery.js',
-	'node_modules/jquery-migrate/dist/jquery-migrate.js',
-	'node_modules/js-cookie/src/js.cookie.js',
-	'node_modules/bootstrap/build/js/bootstrap.js',
+	'src/_components/jquery/dist/jquery.js',
+	'src/_components/jquery-migrate/jquery-migrate.js',
+	'src/_components/js-cookie/src/js.cookie.js',
+	'src/_components/bootstrap/build/js/bootstrap.js',
 	'src/utils.js',
 	'src/smcplus.js'
 ];
 
 var cssfiles = [
-	'node_modules/bootstrap/dist/css/bootstrap.css',
-	'node_modules/bootstrap/dist/css/bootstrap-theme.css',
+	'src/_components/bootstrap/dist/css/bootstrap.css',
+	'src/_components/bootstrap/dist/css/bootstrap-theme.css',
 	'src/smcplus.css'
 ];
 
@@ -59,7 +59,7 @@ module.exports = function(grunt) {
 			main: {
 				files: [
 					{
-						src: ['node_modules/bootstrap/fonts/*'],
+						src: ['src/_components/bootstrap/fonts/*'],
 						dest: 'build/fonts/',
 						expand: true,
 						flatten: true

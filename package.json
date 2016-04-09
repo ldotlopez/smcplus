@@ -14,13 +14,12 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/ldotlopez/smcplus#readme",
   "devDependencies": {
-    "bootstrap": "^3.3.6",
+    "bower": "^1.7.9",
     "grunt": "^1.0.1",
     "grunt-contrib-cssmin": "^1.0.1",
     "grunt-processhtml": "^0.3.13",
     "grunt-rsync": "^1.0.1",
-    "jquery": "^2.2.3",
-    "js-cookie": "^2.1.0",
+    "http-server": "^0.9.0",
     "uglify": "^0.1.5"
   }
 }
