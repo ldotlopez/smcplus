@@ -1,0 +1,3 @@
+# smcplus
+
+Better & simpler 'SMC'
