@@ -80,6 +80,19 @@ module.exports = function(grunt) {
 					'build/index.html': ['src/index.html']
 				}
 			}
+		},
+
+		rsync: {
+			prod: {
+				options: {
+					src: 'build/',
+					dest: 'cuarentaydos.com/SMC+/',
+					host: 'xuzo@cuarentaydos.com',
+					dryRun: false,
+					delete: false,
+					recursive: true
+				}
+			}
 		}
 
 	});
@@ -89,7 +102,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-processhtml');
+	grunt.loadNpmTasks('grunt-rsync');
 
 	grunt.registerTask('default', ['concat', 'uglify', 'cssmin', 'copy', 'processhtml']);
+	grunt.registerTask('upload', ['rsync'])
 };
 

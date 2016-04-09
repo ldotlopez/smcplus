@@ -5,7 +5,7 @@ var Defaults = {
 	longitude: -0.043105240,
 	zoom: 15,
     mapStyle: [ { "elementType": "labels", "stylers": [ { "visibility": "off" } ] } ],
-	apiKey: 'AIzaSyAbozrLWf95y2G6oz24ne3ONfaaOXhEVp0',
+	apiKey: 'AIzaSyD-tABUA5y4yiqYWROerjNXp-Jft3VCbE8',
 	language: 'es',
 	AytoArea: 'Otras Áreas de desperfecto.',
 	AytoCause: 'Desconocido',
