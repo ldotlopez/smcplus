@@ -2,7 +2,7 @@ var jsfiles = [
 	'src/_components/jquery/dist/jquery.js',
 	'src/_components/jquery-migrate/jquery-migrate.js',
 	'src/_components/js-cookie/src/js.cookie.js',
-	'src/_components/bootstrap/build/js/bootstrap.js',
+	'src/_components/bootstrap/dist/js/bootstrap.js',
 	'src/utils.js',
 	'src/smcplus.js'
 ];
